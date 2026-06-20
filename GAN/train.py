@@ -15,10 +15,7 @@ try:
         configs = utils.Configs()
         dataloader = dataset.get_dataloader()
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # Torch device
-        label_smoothing_labels = torch.ones(configs.batch_size, 1, device=device) * configs.label_smoothing_value  # label smoothing
-        real_labels = torch.ones(configs.batch_size, 1, device=device)   # 1 labels for real images
-        fake_labels = torch.zeros(configs.batch_size, 1, device=device)  # 0 labels for fake images
-        fixed_noise = torch.randn(24, configs.G_latent_dim, device=device) # Fixed noise for creating same images
+        fixed_noise = torch.randn(32, configs.G_latent_dim, device=device) # Fixed noise for creating same images
         start_time = 0
         begin_time = round(time.time())
         epoch_times = [0]
@@ -46,6 +43,9 @@ try:
         # Defining optimizer
         G_opt = optim.Adam(G.parameters(), lr=configs.G_learning_rate, betas=configs.betas)
         D_opt = optim.Adam(D.parameters(), lr=configs.D_learning_rate, betas=configs.betas)
+
+        # Defining MultiStepLR
+        D_scheduler = optim.lr_scheduler.MultiStepLR(optimizer=D_opt, milestones=configs.reduce_epochs, gamma=configs.reduce_lr)
 
         print(f"""{Fore.GREEN}{Style.BRIGHT}Starting training GAN model on CIFAR-10 dataset {Fore.WHITE}{Style.NORMAL}
 
@@ -75,7 +75,7 @@ try:
                     # Zero gradients
                     D_opt.zero_grad()
 
-                    # Calculating loss on real images
+                    # Computing loss on real images
                     output_real = D(real_images)
                     loss_D_real = D_loss_real(output_real)
 
@@ -83,13 +83,30 @@ try:
                     z = torch.randn(configs.batch_size, configs.G_latent_dim, device=device)
                     fake_images = G(z).detach()
 
-                    # Calculating loss on fake images
+                    # Computing loss on fake images
                     output_fake = D(fake_images.to(device))
                     loss_D_fake = D_loss_fake(output_fake)
 
-                    # Calculating total loss
-                    loss_D = loss_D_real + loss_D_fake
+                    # Gradient Penalty
+                    epsilon = torch.rand(configs.batch_size, 1, 1, 1, device=device)
+                    interpolated_images = epsilon*real_images+(1−epsilon)*fake_images
+                    output_interpolated = D(interpolated_images)
+                    # Computing gradient 
+                    gradients = torch.autograd.grad(
+                        outputs=output_interpolated.sum(),
+                        inputs=interpolated_images,
+                        create_graph=True,
+                        retain_graph=True,
+                        only_inputs=True
+                    )[0]
+                    # Computing gradient norm
+                    grad_norm = gradients.view(gradients.size(0), -1).norm(2, dim=1)
+                    # Computing penalty
+                    penalty = ((grad_norm - 1.0) ** 2).mean()
 
+                    # Computing total loss
+                    loss_D = loss_D_real + loss_D_fake + configs.penalty_effect*penalty
+                    
                     # Training the discriminator
                     loss_D.backward()
                     torch.nn.utils.clip_grad_norm_(D.parameters(), max_norm=configs.D_gradients_clipping_value)   # clip discriminator gradients
@@ -104,7 +121,7 @@ try:
                     z = torch.randn(configs.batch_size, configs.G_latent_dim, device=device)
                     fake_images = G(z)
 
-                    # Feeding the discriminator and calculating loss
+                    # Feeding the discriminator and Computing loss
                     output = D(fake_images)
                     loss_G = G_loss(output)
 
@@ -165,18 +182,23 @@ try:
             plt.savefig(f"{configs.output_directory}/{configs.output_images_directory}/epoch_{epoch_num+1:03d}.png", bbox_inches='tight')
             plt.close()
 
-            print(f"{Fore.MAGENTA}{Style.BRIGHT}Epoch {epoch_num+1} complete. Images saved to {configs.output_directory}/{configs.output_images_directory}/epoch_{epoch_num+1:03d}.png{Fore.WHITE}{Style.NORMAL}")
-
+            # Saving model every save_model_every_epoch epoch
             if (epoch_num+1) % configs.save_model_every_epoch == 0:
                 torch.save(G.state_dict(), f"{configs.output_directory}/{configs.output_models_directory}/cifar10_GAN_epoch_{epoch_num+1}.pth")
                 print(f"{Fore.MAGENTA}{Style.BRIGHT}Model saved to {configs.output_directory}/{configs.output_models_directory}/epoch_{epoch_num+1:03d}.png at epoch {epoch_num+1:03d}{Fore.WHITE}{Style.NORMAL}")
 
-            # Calculating the time spent on this epoch
-            epoch_times.append(round(time.time() - start_time))
-
             # Removing 0 from epoch_times
             if (epoch_num+1) == 2:
                 del epoch_times[0]
+
+            # Stepping for LR scheduler
+            D_scheduler.step()
+
+            # Computing the time spent on this epoch
+            epoch_times.append(round(time.time() - start_time))
+
+            # Finishing the epoch
+            print(f"{Fore.MAGENTA}{Style.BRIGHT}Epoch {epoch_num+1} complete. Images saved to {configs.output_directory}/{configs.output_images_directory}/epoch_{epoch_num+1:03d}.png{Fore.WHITE}{Style.NORMAL}")
 
         # Plotting training process
         plt.figure(figsize=(10, 5))

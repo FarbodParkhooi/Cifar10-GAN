@@ -10,6 +10,9 @@ class Configs():
 
     # Discriminator model
     D_learning_rate = 0.0001
+    # Multi Step Learning Rate configs
+    reduce_epochs = [50, 100]
+    reduce_lr = 0.5  # after reduce_epochs[N] epochs:  D_learning_rate*reduce_lr
 
     # Optimizer related
     betas = (0.5, 0.999)
@@ -20,17 +23,18 @@ class Configs():
     dataset_dir = "../"
 
     # Training process
-    epochs = 220
+    epochs = 300
     train_D_per_epoch = 1
-    train_G_per_epoch = 1
+    train_G_per_epoch = 2
     label_smoothing_value = 0.85
     output_directory = "./train_outputs"
     output_images_directory = "generated_images"
     output_models_directory = "saved_models"
     save_model_every_epoch = 30 
-    real_images_noise = 0.03
+    real_images_noise = 0.01
     print_log_every_batch = 250
     D_gradients_clipping_value = 5.0
+    penalty_effect = 0.1
 
 def count_parameters(model) -> int:
     """
