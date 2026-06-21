@@ -3,6 +3,7 @@ try:
         from modules import dataset, utils, discriminator, generator
         from colorama import init, Fore, Back, Style
         import torchvision.utils as vutils
+        from datetime import datetime
         import torch.optim as optim
         from os import makedirs
         from torch import nn
@@ -10,6 +11,7 @@ try:
         import numpy
         import torch
         import time
+        import json
 
         # Defining values
         configs = utils.Configs()
@@ -188,19 +190,24 @@ try:
             # Saving checkpoints every save_checkpoints_every_epoch epoch
             if (epoch_num+1) % configs.save_checkpoints_every_epoch == 0:
                 makedirs(f"{configs.output_directory}/{configs.output_models_directory}/epoch_{epoch_num+1:03d}/", exist_ok=True)
+                # Saving generator
                 torch.save(G.state_dict(), f"{configs.output_directory}/{configs.output_models_directory}/epoch_{epoch_num+1:03d}/generator.pth")
+                # Saving discriminator
                 torch.save(D.state_dict(), f"{configs.output_directory}/{configs.output_models_directory}/epoch_{epoch_num+1:03d}/discriminator.pth")
+                # Saving generator's optimizer
                 torch.save(G_opt.state_dict(), f"{configs.output_directory}/{configs.output_models_directory}/epoch_{epoch_num+1:03d}/generator_optimizer.pth")
+                # Saving discriminator's optimizer
                 torch.save(D_opt.state_dict(), f"{configs.output_directory}/{configs.output_models_directory}/epoch_{epoch_num+1:03d}/discriminator_optimizer.pth")
+                # Saving discriminator's learning rate scheduler
                 torch.save(D_scheduler.state_dict(), f"{configs.output_directory}/{configs.output_models_directory}/epoch_{epoch_num+1:03d}/lr_scheduler.pth")                
+                # Saving epoch number
                 with open(f"{configs.output_directory}/{configs.output_models_directory}/epoch_{epoch_num+1:03d}/status.json", "w") as file:
-                    data = "{'epoch':"+f"{int(epoch_num+1)}"+"}"
-                    file.write(data)
+                    data = {"epoch_num" : epoch_num}
+                    json.dump(data, file)
                 print(f"{Fore.MAGENTA}{Style.BRIGHT}Checkpoint saved to {configs.output_directory}/{configs.output_models_directory}/ at epoch {epoch_num+1:03d}{Fore.WHITE}{Style.NORMAL}")
 
             # Removing 0 from epoch_times
-            if (epoch_num+1) == 2:
-                del epoch_times[0]
+            if (epoch_num+1) == 2:   del epoch_times[0]
 
             # Stepping for LR scheduler
             D_scheduler.step()
@@ -222,13 +229,22 @@ try:
         plt.grid(True, alpha=0.3)
         plt.savefig(f"{configs.output_directory}/loss_plot.png", bbox_inches='tight')
         plt.show()
-
-        print(f"{Fore.BLUE}{Style.BRIGHT}Final Generator Loss{Fore.WHITE}{Style.NORMAL}:      {G_losses[-1]:.4f}")
-        print(f"{Fore.BLUE}{Style.BRIGHT}Final Discriminator Loss{Fore.WHITE}{Style.NORMAL}:  {D_losses[-1]:.4f}")
-
+        
         # Saving model
         torch.save(G.state_dict(), f"{configs.output_directory}/{configs.output_models_directory}/cifar10_GAN.pth")
         print(f"\n{Fore.GREEN}{Style.NORMAL}Generator saved to {Fore.BLUE}{Style.BRIGHT}'{configs.output_directory}/{configs.output_models_directory}/cifar10_GAN.pth'")
+
+        # Logging plot address
+        print(f"{Fore.GREEN}{Style.BRIGHT}Training process plott saved to '{configs.output_directory}/loss_plot.png'{Fore.WHITE}{Style.NORMAL}")
+
+        # Logging models' losses
+        print(f"{Fore.BLUE}{Style.BRIGHT}Final Generator Loss{Fore.WHITE}{Style.NORMAL}:      {G_losses[-1]:.4f}{Fore.WHITE}{Style.NORMAL}")
+        print(f"{Fore.BLUE}{Style.BRIGHT}Final Discriminator Loss{Fore.WHITE}{Style.NORMAL}:  {D_losses[-1]:.4f}{Fore.WHITE}{Style.NORMAL}")
+
+        # Logging last data
+        print(f"{Fore.GREEN}{Style.BRIGHT}\n\nTraining Completed Successfuly!\n\n{Fore.WHITE}{Style.NORMAL}")
+        print(f"{Fore.BLUE}       Finshed training at {datetime.now().strftime('%Y-%m-%d | %H:%M:%S')}")
+
 
 except KeyboardInterrupt:
     print("Going out...")
