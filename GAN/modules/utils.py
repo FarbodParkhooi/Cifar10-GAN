@@ -3,6 +3,11 @@ from dataclasses import dataclass
 # Creating frozen class for constant configs
 @dataclass(frozen=True)
 class Configs():
+    """
+    All configuration needed for Generator, Discriminator, Optimizer, Dataset, and Training process
+
+    * Dangerous configurations have a '#*' at the end
+    """
     # Generator model 
     G_latent_dim:int = 256
     G_projection_dim:tuple = (128, 2, 2) # Channels=128 , Width=Height=2
@@ -19,9 +24,9 @@ class Configs():
 
     # Dataset
     batch_size:int = 200
-    num_workers:int = 12
+    num_workers:int = 12     #*
     dataset_dir:str = "../"
-    prefetch_factor:int = 2
+    prefetch_factor:int = 2  #*
 
     # Training process
     # General configs
@@ -30,9 +35,9 @@ class Configs():
     output_images_directory:str = "generated_images"
     output_models_directory:str = "saved_models"
     print_log_every_batch:int = 250
-    save_model_every_epoch:int = 30 
+    save_checkpoints_every_epoch:int = 50   # Saves all of needed data for re-training process if stopped
     save_sample_image_every_epoch:int = 10
-    enable_cudnn = True
+    enable_cudnn = True  #* 
     # Deep configS
     train_D_per_epoch:int = 1
     train_G_per_epoch:int = 2
