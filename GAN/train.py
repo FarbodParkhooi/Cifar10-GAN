@@ -185,10 +185,18 @@ try:
                 plt.savefig(f"{configs.output_directory}/{configs.output_images_directory}/epoch_{epoch_num+1:03d}.png", bbox_inches='tight')
                 plt.close()
 
-            # Saving model every save_model_every_epoch epoch
-            if (epoch_num+1) % configs.save_model_every_epoch == 0:
-                torch.save(G.state_dict(), f"{configs.output_directory}/{configs.output_models_directory}/cifar10_GAN_epoch_{epoch_num+1}.pth")
-                print(f"{Fore.MAGENTA}{Style.BRIGHT}Model saved to {configs.output_directory}/{configs.output_models_directory}/epoch_{epoch_num+1:03d}.png at epoch {epoch_num+1:03d}{Fore.WHITE}{Style.NORMAL}")
+            # Saving checkpoints every save_checkpoints_every_epoch epoch
+            if (epoch_num+1) % configs.save_checkpoints_every_epoch == 0:
+                makedirs(f"{configs.output_directory}/{configs.output_models_directory}/epoch_{epoch_num+1:03d}/", exist_ok=True)
+                torch.save(G.state_dict(), f"{configs.output_directory}/{configs.output_models_directory}/epoch_{epoch_num+1:03d}/generator.pth")
+                torch.save(D.state_dict(), f"{configs.output_directory}/{configs.output_models_directory}/epoch_{epoch_num+1:03d}/discriminator.pth")
+                torch.save(G_opt.state_dict(), f"{configs.output_directory}/{configs.output_models_directory}/epoch_{epoch_num+1:03d}/generator_optimizer.pth")
+                torch.save(D_opt.state_dict(), f"{configs.output_directory}/{configs.output_models_directory}/epoch_{epoch_num+1:03d}/discriminator_optimizer.pth")
+                torch.save(D_scheduler.state_dict(), f"{configs.output_directory}/{configs.output_models_directory}/epoch_{epoch_num+1:03d}/lr_scheduler.pth")                
+                with open(f"{configs.output_directory}/{configs.output_models_directory}/epoch_{epoch_num+1:03d}/status.json", "w") as file:
+                    data = "{'epoch':"+f"{int(epoch_num+1)}"+"}"
+                    file.write(data)
+                print(f"{Fore.MAGENTA}{Style.BRIGHT}Checkpoint saved to {configs.output_directory}/{configs.output_models_directory}/ at epoch {epoch_num+1:03d}{Fore.WHITE}{Style.NORMAL}")
 
             # Removing 0 from epoch_times
             if (epoch_num+1) == 2:
