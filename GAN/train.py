@@ -20,6 +20,7 @@ try:
         begin_time = round(time.time())
         epoch_times = [0]
         average_func = lambda lst: sum(lst) / len(lst)
+        torch.backends.cudnn.benchmark = configs.enable_cudnn
 
         # Related to libraries
         matplotlib.use('Agg') # preventing from crash
@@ -165,23 +166,24 @@ try:
                     f"{Fore.BLUE}{Style.NORMAL}ETA: {Fore.GREEN}{Style.BRIGHT}{round((average_func(epoch_times)*(configs.epochs-epoch_num))/60)}mins")
 
             # Creating same image after each epoch
-            # Set generator to evaluation mode
-            G.eval()
-            with torch.no_grad():
-                # Generate images from fixed noise
-                generated_images = G(fixed_noise).cpu()
-            G.train()  # Back to training mode
-            
-            # Create image grid (8 images per row)
-            grid = vutils.make_grid(generated_images, nrow=8, normalize=True)
-            
-            # Convert to numpy and display/save
-            plt.figure(figsize=(10, 10))
-            plt.imshow(numpy.transpose(grid, (1, 2, 0)))
-            plt.axis('off')
-            plt.title(f"Epoch {epoch_num+1}")
-            plt.savefig(f"{configs.output_directory}/{configs.output_images_directory}/epoch_{epoch_num+1:03d}.png", bbox_inches='tight')
-            plt.close()
+            if epoch_num % configs.save_sample_image_every_epoch == 0:
+                # Set generator to evaluation mode
+                G.eval()
+                with torch.no_grad():
+                    # Generate images from fixed noise
+                    generated_images = G(fixed_noise).cpu()
+                G.train()  # Back to training mode
+                
+                # Create image grid (8 images per row)
+                grid = vutils.make_grid(generated_images, nrow=8, normalize=True)
+                
+                # Convert to numpy and display/save
+                plt.figure(figsize=(10, 10))
+                plt.imshow(numpy.transpose(grid, (1, 2, 0)))
+                plt.axis('off')
+                plt.title(f"Epoch {epoch_num+1}")
+                plt.savefig(f"{configs.output_directory}/{configs.output_images_directory}/epoch_{epoch_num+1:03d}.png", bbox_inches='tight')
+                plt.close()
 
             # Saving model every save_model_every_epoch epoch
             if (epoch_num+1) % configs.save_model_every_epoch == 0:

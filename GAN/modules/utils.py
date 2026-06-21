@@ -4,37 +4,42 @@ from dataclasses import dataclass
 @dataclass(frozen=True)
 class Configs():
     # Generator model 
-    G_latent_dim = 256
-    G_projection_dim = (128, 2, 2) # Channels=128 , Width=Height=2
-    G_learning_rate = 0.0001
+    G_latent_dim:int = 256
+    G_projection_dim:tuple = (128, 2, 2) # Channels=128 , Width=Height=2
+    G_learning_rate:float = 0.0001
 
     # Discriminator model
-    D_learning_rate = 0.0001
+    D_learning_rate:float = 0.0001
     # Multi Step Learning Rate configs
-    reduce_epochs = [50, 100]
-    reduce_lr = 0.5  # after reduce_epochs[N] epochs:  D_learning_rate*reduce_lr
+    reduce_epochs:list = [50, 100]
+    reduce_lr:float = 0.5  # after reduce_epochs[N] epochs:  D_learning_rate*reduce_lr
 
     # Optimizer related
-    betas = (0.5, 0.999)
+    betas:tuple = (0.5, 0.999)
 
     # Dataset
-    batch_size = 100
-    num_workers = 4
-    dataset_dir = "../"
+    batch_size:int = 200
+    num_workers:int = 12
+    dataset_dir:str = "../"
+    prefetch_factor:int = 2
 
     # Training process
-    epochs = 300
-    train_D_per_epoch = 1
-    train_G_per_epoch = 2
-    label_smoothing_value = 0.85
-    output_directory = "./train_outputs"
-    output_images_directory = "generated_images"
-    output_models_directory = "saved_models"
-    save_model_every_epoch = 30 
-    real_images_noise = 0.01
-    print_log_every_batch = 250
-    D_gradients_clipping_value = 5.0
-    penalty_effect = 0.1
+    # General configs
+    epochs:int = 300
+    output_directory:str = "./train_outputs"
+    output_images_directory:str = "generated_images"
+    output_models_directory:str = "saved_models"
+    print_log_every_batch:int = 250
+    save_model_every_epoch:int = 30 
+    save_sample_image_every_epoch:int = 10
+    enable_cudnn = True
+    # Deep configS
+    train_D_per_epoch:int = 1
+    train_G_per_epoch:int = 2
+    label_smoothing_value:float = 0.85
+    real_images_noise:float = 0.01
+    D_gradients_clipping_value:float = 5.0
+    penalty_effect:float = 0.1
 
 def count_parameters(model) -> int:
     """

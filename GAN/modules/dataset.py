@@ -31,7 +31,8 @@ dataloader = DataLoader(
     drop_last=True,
     shuffle=True,
     pin_memory=True,
-    num_workers=configs.num_workers
+    num_workers=configs.num_workers,
+    prefetch_factor=configs.prefetch_factor
 )
 
 # This function returns data loader
