@@ -24,8 +24,8 @@ class Configs():
 
     # Dataset
     batch_size:int = 200
-    num_workers:int = 12     #*
     dataset_dir:str = "../"
+    num_workers:int = 12     #*
     prefetch_factor:int = 2  #*
 
     # Training process
