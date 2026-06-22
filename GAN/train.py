@@ -1,0 +1,158 @@
+from modules import dataset, utils, discriminator, generator
+from colorama import init, Fore, Back, Style
+import torchvision.utils as vutils
+import matplotlib.pyplot as plt
+import torch.optim as optim
+from os import makedirs
+from torch import nn
+import numpy
+import torch
+
+# Defining values
+configs = utils.Configs()
+dataloader = dataset.get_dataloader()
+init() # init Colorama
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # Torch device
+label_smoothing_labels = torch.ones(configs.batch_size, 1, device=device) * configs.label_smoothing_value  # label smoothing
+real_labels = torch.ones(configs.batch_size, 1, device=device)   # 1 labels for real images
+fake_labels = torch.zeros(configs.batch_size, 1, device=device)  # 0 labels for fake images
+fixed_noise = torch.randn(configs.batch_size, configs.G_latent_dim, device=device) # Fixed noise for creating same images
+
+# Creating output directory
+makedirs(configs.output_directory, exist_ok=True)
+makedirs(f"{configs.output_directory}/{configs.output_images_directory}", exist_ok=True)
+makedirs(f"{configs.output_directory}{configs.output_models_directory}", exist_ok=True)
+
+# Defining models
+G = generator.Generator(latent_dim=configs.G_latent_dim, projection_dim=configs.G_projection_dim).to(device)
+D = discriminator.Discriminator().to(device)
+
+# Defining loss function
+loss = nn.BCELoss()
+
+# Defining optimizer
+G_opt = optim.Adam(G.parameters(), lr=configs.G_learning_rate, betas=configs.betas)
+D_opt = optim.Adam(D.parameters(), lr=configs.D_learning_rate, betas=configs.betas)
+
+print(f"""{Fore.GREEN}{Style.BRIGHT}Starting training GAN model on CIFAR-10 dataset {Fore.WHITE}{Style.NORMAL}
+
+{Fore.BLUE}{Style.BRIGHT}-->   Generator Architecture {Fore.WHITE}{Style.NORMAL}:
+{G}
+
+{Fore.BLUE}{Style.BRIGHT}-->   Discriminator Architecture {Fore.WHITE}{Style.NORMAL}:
+{D}
+
+{Fore.BLUE}{Style.BRIGHT}-->   Generator Parameters{Fore.WHITE}{Style.NORMAL}:      {utils.count_parameters(G)}
+{Fore.BLUE}{Style.BRIGHT}-->   Discriminator Parameters{Fore.WHITE}{Style.NORMAL}:  {utils.count_parameters(D)} {Fore.WHITE}{Style.NORMAL}""")
+print(f"\n{Fore.GREEN}{Style.BRIGHT}                            ===- Using GPU -=== {Fore.WHITE}{Style.NORMAL}") if torch.cuda.is_available() else print(f"\n{Fore.YELLOW}{Style.BRIGHT}                            ===- Using CPU -=== {Fore.WHITE}{Style.NORMAL}")
+
+# lists for saving losses
+G_losses = []
+D_losses = []
+
+# Training loop
+for epoch_num in range(configs.epochs):
+    for batch_idx, (real_images, _) in enumerate(dataloader):
+        real_images = real_images.to(device)
+        # Traning discriminator
+        for _ in range(configs.train_D_per_epoch):
+            # Feed discriminator with real images
+            # Zero gradients
+            D_opt.zero_grad()
+
+            # Calculating loss on real images
+            output_real = D(real_images)
+            loss_D_real = loss(output_real, label_smoothing_labels)
+
+            # Feed discriminator with fake images
+            z = torch.randn(configs.batch_size, configs.G_latent_dim, device=device)
+            fake_images = G(z).detach()
+
+            # Calculating loss on fake images
+            output_fake = D(fake_images.to(device))
+            loss_D_fake = loss(output_fake, fake_labels)
+
+            # Calculating total loss
+            loss_D = loss_D_real + loss_D_fake
+
+            # Training the discriminator
+            loss_D.backward()
+            D_opt.step()
+
+        # Training generator
+        for _ in range(configs.train_G_per_epoch):
+            # Zero gradients
+            G_opt.zero_grad()
+
+            # Creating fake_images
+            z = torch.randn(configs.batch_size, configs.G_latent_dim, device=device)
+            fake_images = G(z)
+
+            # Feeding the discriminator and calculating loss
+            output = D(fake_images)
+            loss_G = loss(output, real_labels)
+
+            # Training the model
+            loss_G.backward()
+            G_opt.step()
+
+
+        # Adding losses 
+        D_losses.append(loss_D.item())
+        G_losses.append(loss_G.item())
+
+        # Logging in terminal
+        if batch_idx % 100 == 0 and batch_idx != 0:
+            print(f"{Fore.BLUE}{Style.NORMAL}Epoch {Fore.GREEN}{Style.BRIGHT}{epoch_num+1}{Fore.WHITE}{Style.NORMAL}/{Fore.GREEN}{Style.BRIGHT}{configs.epochs} "
+                f"{Fore.BLUE}{Style.NORMAL}Batch {Fore.GREEN}{Style.BRIGHT}{batch_idx}{Fore.WHITE}{Style.NORMAL}/{Fore.GREEN}{Style.BRIGHT}{len(dataloader)} "
+                f"{Fore.BLUE}{Style.NORMAL}D_loss: {Fore.GREEN}{Style.BRIGHT}{loss_D.item():.4f} "
+                f"{Fore.BLUE}{Style.NORMAL}G_loss: {Fore.GREEN}{Style.BRIGHT}{loss_G.item():.4f} "
+                f"{Fore.BLUE}{Style.NORMAL}D_real: {Fore.GREEN}{Style.BRIGHT}{output_real.mean().item():.3f} "
+                f"{Fore.BLUE}{Style.NORMAL}D_fake: {Fore.GREEN}{Style.BRIGHT}{output_fake.mean().item():.3f}")
+        elif batch_idx == 0:
+            print(f"{Fore.BLUE}{Style.NORMAL}Epoch {Fore.GREEN}{Style.BRIGHT}{epoch_num+1}{Fore.WHITE}{Style.NORMAL}/{Fore.GREEN}{Style.BRIGHT}{configs.epochs} "
+                f"{Fore.BLUE}{Style.NORMAL}Batch {Fore.GREEN}{Style.BRIGHT}000{Fore.WHITE}{Style.NORMAL}/{Fore.GREEN}{Style.BRIGHT}{len(dataloader)} "
+                f"{Fore.BLUE}{Style.NORMAL}D_loss: {Fore.GREEN}{Style.BRIGHT}{loss_D.item():.4f} "
+                f"{Fore.BLUE}{Style.NORMAL}G_loss: {Fore.GREEN}{Style.BRIGHT}{loss_G.item():.4f} "
+                f"{Fore.BLUE}{Style.NORMAL}D_real: {Fore.GREEN}{Style.BRIGHT}{output_real.mean().item():.3f} "
+                f"{Fore.BLUE}{Style.NORMAL}D_fake: {Fore.GREEN}{Style.BRIGHT}{output_fake.mean().item():.3f}")
+
+    # Creating same image after each epoch
+    # Set generator to evaluation mode
+    G.eval()
+    with torch.no_grad():
+        # Generate images from fixed noise
+        generated_images = G(fixed_noise).cpu()
+    G.train()  # Back to training mode
+    
+    # Create image grid (8 images per row)
+    grid = vutils.make_grid(generated_images, nrow=8, normalize=True)
+    
+    # Convert to numpy and display/save
+    plt.figure(figsize=(10, 10))
+    plt.imshow(numpy.transpose(grid, (1, 2, 0)))
+    plt.axis('off')
+    plt.title(f"Epoch {epoch_num+1}")
+    plt.savefig(f"{configs.output_directory}/{configs.output_images_directory}/epoch_{epoch_num+1:03d}.png", bbox_inches='tight')
+    plt.close()
+    
+    print(f"Epoch {epoch_num+1} complete. Images saved to {configs.output_directory}/{configs.output_images_directory}/epoch_{epoch_num+1:03d}.png")
+
+# Plotting training process
+plt.figure(figsize=(10, 5))
+plt.title("Generator and Discriminator Loss During Training")
+plt.plot(G_losses, label="Generator Loss")
+plt.plot(D_losses, label="Discriminator Loss")
+plt.xlabel("Iterations")
+plt.ylabel("Loss")
+plt.legend()
+plt.grid(True, alpha=0.3)
+plt.savefig(f"{configs.output_directory}/loss_plot.png", bbox_inches='tight')
+plt.show()
+
+print(f"{Fore.BLUE}{Style.BRIGHT}Final Generator Loss{Fore.WHITE}{Style.NORMAL}:      {G_losses[-1]:.4f}")
+print(f"{Fore.BLUE}{Style.BRIGHT}Final Discriminator Loss{Fore.WHITE}{Style.NORMAL}:  {D_losses[-1]:.4f}")
+
+# Saving model
+torch.save(G.state_dict(), f"{configs.output_directory}/{configs.output_models_directory}/cifar10_GAN.pth")
+print(f"\n{Fore.GREEN}{Style.NORMAL}Generator saved to {Fore.BLUE}{Style.BRIGHT}'{configs.output_directory}/{configs.output_models_directory}/cifar10_GAN.pth'")
