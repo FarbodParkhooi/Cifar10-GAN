@@ -9,6 +9,7 @@ try:
         import matplotlib
         import numpy
         import torch
+        import time
 
         # Defining values
         configs = utils.Configs()
@@ -18,6 +19,8 @@ try:
         real_labels = torch.ones(configs.batch_size, 1, device=device)   # 1 labels for real images
         fake_labels = torch.zeros(configs.batch_size, 1, device=device)  # 0 labels for fake images
         fixed_noise = torch.randn(24, configs.G_latent_dim, device=device) # Fixed noise for creating same images
+        start_time = last_epoch_time = 0
+        begin_time = round(time.time())
 
         # Related to libraries
         matplotlib.use('Agg') # preventing from crash
@@ -58,8 +61,9 @@ try:
 
         # Training loop
         for epoch_num in range(configs.epochs):
+            start_time = time.time()
             for batch_idx, (real_images, _) in enumerate(dataloader):
-                real_images = real_images + 0.05 * torch.randn_like(real_images)
+                real_images = real_images + configs.real_images_noise * torch.randn_like(real_images)
                 real_images = real_images.to(device)
                 # Traning discriminator
                 for _ in range(configs.train_D_per_epoch):
@@ -84,6 +88,7 @@ try:
 
                     # Training the discriminator
                     loss_D.backward()
+                    torch.nn.utils.clip_grad_norm_(D.parameters(), max_norm=configs.D_gradients_clipping_value)   # clip discriminator gradients
                     D_opt.step()
 
                 # Training generator
@@ -103,26 +108,29 @@ try:
                     loss_G.backward()
                     G_opt.step()
 
-
                 # Adding losses 
                 D_losses.append(loss_D.item())
                 G_losses.append(loss_G.item())
 
                 # Logging in terminal
-                if batch_idx % 100 == 0 and batch_idx != 0:
+                if batch_idx % configs.print_log_every_batch == 0 and batch_idx != 0:
                     print(f"{Fore.BLUE}{Style.NORMAL}Epoch {Fore.GREEN}{Style.BRIGHT}{epoch_num+1}{Fore.WHITE}{Style.NORMAL}/{Fore.GREEN}{Style.BRIGHT}{configs.epochs} "
                         f"{Fore.BLUE}{Style.NORMAL}Batch {Fore.GREEN}{Style.BRIGHT}{batch_idx}{Fore.WHITE}{Style.NORMAL}/{Fore.GREEN}{Style.BRIGHT}{len(dataloader)} "
                         f"{Fore.BLUE}{Style.NORMAL}D_loss: {Fore.GREEN}{Style.BRIGHT}{loss_D.item():.4f} "
                         f"{Fore.BLUE}{Style.NORMAL}G_loss: {Fore.GREEN}{Style.BRIGHT}{loss_G.item():.4f} "
                         f"{Fore.BLUE}{Style.NORMAL}D_real: {Fore.GREEN}{Style.BRIGHT}{output_real.mean().item():.3f} "
-                        f"{Fore.BLUE}{Style.NORMAL}D_fake: {Fore.GREEN}{Style.BRIGHT}{output_fake.mean().item():.3f}{Fore.WHITE}{Style.NORMAL}")
+                        f"{Fore.BLUE}{Style.NORMAL}D_fake: {Fore.GREEN}{Style.BRIGHT}{output_fake.mean().item():.3f}{Fore.WHITE}{Style.NORMAL} "
+                        f"{Fore.BLUE}{Style.NORMAL}Total time: {Fore.GREEN}{Style.BRIGHT}{(round(time.time()-begin_time))/60}mins "
+                        f"{Fore.BLUE}{Style.NORMAL}ETA: {Fore.GREEN}{Style.BRIGHT}{(last_epoch_time*(configs.epochs-epoch_num))/60}mins")
                 elif batch_idx == 0:
                     print(f"{Fore.BLUE}{Style.NORMAL}Epoch {Fore.GREEN}{Style.BRIGHT}{epoch_num+1}{Fore.WHITE}{Style.NORMAL}/{Fore.GREEN}{Style.BRIGHT}{configs.epochs} "
                         f"{Fore.BLUE}{Style.NORMAL}Batch {Fore.GREEN}{Style.BRIGHT}000{Fore.WHITE}{Style.NORMAL}/{Fore.GREEN}{Style.BRIGHT}{len(dataloader)} "
                         f"{Fore.BLUE}{Style.NORMAL}D_loss: {Fore.GREEN}{Style.BRIGHT}{loss_D.item():.4f} "
                         f"{Fore.BLUE}{Style.NORMAL}G_loss: {Fore.GREEN}{Style.BRIGHT}{loss_G.item():.4f} "
                         f"{Fore.BLUE}{Style.NORMAL}D_real: {Fore.GREEN}{Style.BRIGHT}{output_real.mean().item():.3f} "
-                        f"{Fore.BLUE}{Style.NORMAL}D_fake: {Fore.GREEN}{Style.BRIGHT}{output_fake.mean().item():.3f}{Fore.WHITE}{Style.NORMAL}")
+                        f"{Fore.BLUE}{Style.NORMAL}D_fake: {Fore.GREEN}{Style.BRIGHT}{output_fake.mean().item():.3f}{Fore.WHITE}{Style.NORMAL} "
+                        f"{Fore.BLUE}{Style.NORMAL}Total time: {Fore.GREEN}{Style.BRIGHT}{(round(time.time()-begin_time))/60}mins "
+                        f"{Fore.BLUE}{Style.NORMAL}ETA: {Fore.GREEN}{Style.BRIGHT}{(last_epoch_time*(configs.epochs-epoch_num))/60}mins")
 
             # Creating same image after each epoch
             # Set generator to evaluation mode
@@ -143,11 +151,11 @@ try:
             plt.savefig(f"{configs.output_directory}/{configs.output_images_directory}/epoch_{epoch_num+1:03d}.png", bbox_inches='tight')
             plt.close()
             
-            print(f"{Fore.MAGENTA}{Style.DIM}Epoch {epoch_num+1} complete. Images saved to {configs.output_directory}/{configs.output_images_directory}/epoch_{epoch_num+1:03d}.png{Fore.WHITE}{Style.NORMAL}")
+            print(f"{Fore.MAGENTA}{Style.BRIGHT}Epoch {epoch_num+1} complete. Images saved to {configs.output_directory}/{configs.output_images_directory}/epoch_{epoch_num+1:03d}.png{Fore.WHITE}{Style.NORMAL}")
 
-            if epoch_num % 30 == 0:
+            if (epoch_num+1) % configs.save_model_every_epoch == 0:
                 torch.save(G.state_dict(), f"{configs.output_directory}/{configs.output_models_directory}/cifar10_GAN_epoch_{epoch_num+1}.pth")
-                print(f"{Fore.MAGENTA}{Style.DIM}Model saved to {configs.output_directory}/{configs.output_models_directory}/epoch_{epoch_num+1:03d}.png at epoch {epoch_num+1:03d}{Fore.WHITE}{Style.NORMAL}")
+                print(f"{Fore.MAGENTA}{Style.BRIGHT}Model saved to {configs.output_directory}/{configs.output_models_directory}/epoch_{epoch_num+1:03d}.png at epoch {epoch_num+1:03d}{Fore.WHITE}{Style.NORMAL}")
 
         # Plotting training process
         plt.figure(figsize=(10, 5))
@@ -167,6 +175,9 @@ try:
         # Saving model
         torch.save(G.state_dict(), f"{configs.output_directory}/{configs.output_models_directory}/cifar10_GAN.pth")
         print(f"\n{Fore.GREEN}{Style.NORMAL}Generator saved to {Fore.BLUE}{Style.BRIGHT}'{configs.output_directory}/{configs.output_models_directory}/cifar10_GAN.pth'")
+
+        # Calculating the time spent on this epoch
+        last_epoch_time = round(time.time() - start_time)
 
 except KeyboardInterrupt:
     print("Going out...")
