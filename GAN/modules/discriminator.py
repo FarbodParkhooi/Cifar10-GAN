@@ -9,7 +9,7 @@ class Discriminator(nn.Module):
         super(Discriminator, self).__init__()
 
         # 4D layers
-        self.cnv1 = nn.Conv2d(in_channels=3, out_channels=64, kernel_size=4, stride=1, padding=1, dilation=1)     # 32x32
+        self.cnv1 = nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, stride=1, padding=1, dilation=1)     # 32x32
         self.nrm1 = nn.BatchNorm2d(num_features=64)
 
         self.cnv2 = nn.Conv2d(in_channels=64, out_channels=128, kernel_size=4, stride=2, padding=1, dilation=1)   # 16x16
