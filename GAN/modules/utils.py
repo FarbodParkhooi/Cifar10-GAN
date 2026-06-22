@@ -17,7 +17,7 @@ class Configs():
     # Dataset
     batch_size = 100
     num_workers = 4
-    dataset_dir = "./"
+    dataset_dir = "../"
 
     # Training process
     epochs = 100
