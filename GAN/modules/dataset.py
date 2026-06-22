@@ -1,7 +1,7 @@
 # importing libraries
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
-import utils
+from modules import utils
 
 configs = utils.Configs()
 
@@ -18,8 +18,8 @@ transform = transforms.Compose([
 
 # Loading dataset
 dataset = datasets.CIFAR10(
-    root="./",
-    download=True,
+    root=configs.dataset_dir,
+    download=False,
     train=True,
     transform=transform
 )
