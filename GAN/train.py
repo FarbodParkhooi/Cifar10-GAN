@@ -167,6 +167,9 @@ try:
                 torch.save(G.state_dict(), f"{configs.output_directory}/{configs.output_models_directory}/cifar10_GAN_epoch_{epoch_num+1}.pth")
                 print(f"{Fore.MAGENTA}{Style.BRIGHT}Model saved to {configs.output_directory}/{configs.output_models_directory}/epoch_{epoch_num+1:03d}.png at epoch {epoch_num+1:03d}{Fore.WHITE}{Style.NORMAL}")
 
+            # Calculating the time spent on this epoch
+            last_epoch_time = round(time.time() - start_time)
+
         # Plotting training process
         plt.figure(figsize=(10, 5))
         plt.title("Generator and Discriminator Loss During Training")
@@ -185,9 +188,6 @@ try:
         # Saving model
         torch.save(G.state_dict(), f"{configs.output_directory}/{configs.output_models_directory}/cifar10_GAN.pth")
         print(f"\n{Fore.GREEN}{Style.NORMAL}Generator saved to {Fore.BLUE}{Style.BRIGHT}'{configs.output_directory}/{configs.output_models_directory}/cifar10_GAN.pth'")
-
-        # Calculating the time spent on this epoch
-        last_epoch_time = round(time.time() - start_time)
 
 except KeyboardInterrupt:
     print("Going out...")
