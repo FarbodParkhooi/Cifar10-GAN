@@ -23,10 +23,14 @@ class Configs():
     epochs = 220
     train_D_per_epoch = 1
     train_G_per_epoch = 1
-    label_smoothing_value = 0.8 
+    label_smoothing_value = 0.95 
     output_directory = "./train_outputs"
     output_images_directory = "generated_images"
     output_models_directory = "saved_models"
+    save_model_every_epoch = 30 
+    real_images_noise = 0.01
+    print_log_every_batch = 250
+    D_gradients_clipping_value = 5.0
 
 def count_parameters(model) -> int:
     """
