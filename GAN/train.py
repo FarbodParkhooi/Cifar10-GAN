@@ -115,14 +115,14 @@ try:
                         f"{Fore.BLUE}{Style.NORMAL}D_loss: {Fore.GREEN}{Style.BRIGHT}{loss_D.item():.4f} "
                         f"{Fore.BLUE}{Style.NORMAL}G_loss: {Fore.GREEN}{Style.BRIGHT}{loss_G.item():.4f} "
                         f"{Fore.BLUE}{Style.NORMAL}D_real: {Fore.GREEN}{Style.BRIGHT}{output_real.mean().item():.3f} "
-                        f"{Fore.BLUE}{Style.NORMAL}D_fake: {Fore.GREEN}{Style.BRIGHT}{output_fake.mean().item():.3f}")
+                        f"{Fore.BLUE}{Style.NORMAL}D_fake: {Fore.GREEN}{Style.BRIGHT}{output_fake.mean().item():.3f}{Fore.WHITE}{Style.NORMAL}")
                 elif batch_idx == 0:
                     print(f"{Fore.BLUE}{Style.NORMAL}Epoch {Fore.GREEN}{Style.BRIGHT}{epoch_num+1}{Fore.WHITE}{Style.NORMAL}/{Fore.GREEN}{Style.BRIGHT}{configs.epochs} "
                         f"{Fore.BLUE}{Style.NORMAL}Batch {Fore.GREEN}{Style.BRIGHT}000{Fore.WHITE}{Style.NORMAL}/{Fore.GREEN}{Style.BRIGHT}{len(dataloader)} "
                         f"{Fore.BLUE}{Style.NORMAL}D_loss: {Fore.GREEN}{Style.BRIGHT}{loss_D.item():.4f} "
                         f"{Fore.BLUE}{Style.NORMAL}G_loss: {Fore.GREEN}{Style.BRIGHT}{loss_G.item():.4f} "
                         f"{Fore.BLUE}{Style.NORMAL}D_real: {Fore.GREEN}{Style.BRIGHT}{output_real.mean().item():.3f} "
-                        f"{Fore.BLUE}{Style.NORMAL}D_fake: {Fore.GREEN}{Style.BRIGHT}{output_fake.mean().item():.3f}")
+                        f"{Fore.BLUE}{Style.NORMAL}D_fake: {Fore.GREEN}{Style.BRIGHT}{output_fake.mean().item():.3f}{Fore.WHITE}{Style.NORMAL}")
 
             # Creating same image after each epoch
             # Set generator to evaluation mode
@@ -143,7 +143,11 @@ try:
             plt.savefig(f"{configs.output_directory}/{configs.output_images_directory}/epoch_{epoch_num+1:03d}.png", bbox_inches='tight')
             plt.close()
             
-            print(f"Epoch {epoch_num+1} complete. Images saved to {configs.output_directory}/{configs.output_images_directory}/epoch_{epoch_num+1:03d}.png")
+            print(f"{Fore.MAGENTA}{Style.DIM}Epoch {epoch_num+1} complete. Images saved to {configs.output_directory}/{configs.output_images_directory}/epoch_{epoch_num+1:03d}.png{Fore.WHITE}{Style.NORMAL}")
+
+            if epoch_num % 30 == 0:
+                torch.save(G.state_dict(), f"{configs.output_directory}/{configs.output_models_directory}/cifar10_GAN_epoch_{epoch_num+1}.pth")
+                print(f"{Fore.MAGENTA}{Style.DIM}Model saved to {configs.output_directory}/{configs.output_models_directory}/epoch_{epoch_num+1:03d}.png at epoch {epoch_num+1:03d}{Fore.WHITE}{Style.NORMAL}")
 
         # Plotting training process
         plt.figure(figsize=(10, 5))
