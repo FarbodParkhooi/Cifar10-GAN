@@ -21,7 +21,7 @@ fixed_noise = torch.randn(configs.batch_size, configs.G_latent_dim, device=devic
 # Creating output directory
 makedirs(configs.output_directory, exist_ok=True)
 makedirs(f"{configs.output_directory}/{configs.output_images_directory}", exist_ok=True)
-makedirs(f"{configs.output_directory}{configs.output_models_directory}", exist_ok=True)
+makedirs(f"{configs.output_directory}/{configs.output_models_directory}", exist_ok=True)
 
 # Defining models
 G = generator.Generator(latent_dim=configs.G_latent_dim, projection_dim=configs.G_projection_dim).to(device)
