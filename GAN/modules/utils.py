@@ -20,7 +20,7 @@ class Configs():
     dataset_dir = "../"
 
     # Training process
-    epochs = 100
+    epochs = 220
     train_D_per_epoch = 1
     train_G_per_epoch = 1
     label_smoothing_value = 0.8 
