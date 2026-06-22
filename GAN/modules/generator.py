@@ -47,7 +47,9 @@ class Generator(nn.Module):
         x = self.lin1(noise)
         x = self.nrm1(x)
         x = self.elu(x)
-        x = x.view(x.size(0), self.pd[0], self.pd[1], self.pd[2]) # convert to 4D  (Batch, Channel, Width, Height)
+        
+        # convert to 4D 
+        x = x.view(x.size(0), self.pd[0], self.pd[1], self.pd[2]) # (Batch, Channel, Width, Height)
 
         # 4D layers
         x = self.cnv0(x)
@@ -77,3 +79,5 @@ class Generator(nn.Module):
         # Output layers
         x = self.cnv5(x)
         x = self.tanh(x)
+
+        return x
