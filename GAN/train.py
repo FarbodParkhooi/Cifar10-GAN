@@ -134,7 +134,7 @@ try:
 
             # Logging the status after each epoch
             print(f"{Fore.BLUE}{Style.NORMAL}Epoch {Fore.GREEN}{Style.BRIGHT}{epoch_num+1}{Fore.WHITE}{Style.NORMAL}/{Fore.GREEN}{Style.BRIGHT}{configs.epochs} "
-                    f"{Fore.BLUE}{Style.NORMAL}Batch {Fore.GREEN}{Style.BRIGHT}{batch_idx}{Fore.WHITE}{Style.NORMAL}/{Fore.GREEN}{Style.BRIGHT}{len(dataloader)} "
+                    f"{Fore.BLUE}{Style.NORMAL}Batch {Fore.GREEN}{Style.BRIGHT}{len(dataloader)}{Fore.WHITE}{Style.NORMAL}/{Fore.GREEN}{Style.BRIGHT}{len(dataloader)} "
                     f"{Fore.BLUE}{Style.NORMAL}D_loss: {Fore.GREEN}{Style.BRIGHT}{loss_D.item():.4f} "
                     f"{Fore.BLUE}{Style.NORMAL}G_loss: {Fore.GREEN}{Style.BRIGHT}{loss_G.item():.4f} "
                     f"{Fore.BLUE}{Style.NORMAL}D_real: {Fore.GREEN}{Style.BRIGHT}{output_real.mean().item():.3f} "
