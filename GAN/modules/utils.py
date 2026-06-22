@@ -9,21 +9,21 @@ class Configs():
     G_learning_rate = 0.0001
 
     # Discriminator model
-    D_learning_rate = 0.0004
+    D_learning_rate = 0.0001
 
     # Optimizer related
     betas = (0.5, 0.999)
 
     # Dataset
     batch_size = 100
-    num_workers = 0
+    num_workers = 4
     dataset_dir = "../"
 
     # Training process
     epochs = 100
     train_D_per_epoch = 1
     train_G_per_epoch = 1
-    label_smoothing_value = 0.9 
+    label_smoothing_value = 0.8 
     output_directory = "./train_outputs"
     output_images_directory = "generated_images"
     output_models_directory = "saved_models"
