@@ -174,6 +174,10 @@ try:
             # Calculating the time spent on this epoch
             epoch_times.append(round(time.time() - start_time))
 
+            # Removing 0 from epoch_times
+            if (epoch_num+1) == 2:
+                del epoch_times[0]
+
         # Plotting training process
         plt.figure(figsize=(10, 5))
         plt.title("Generator and Discriminator Loss During Training")
