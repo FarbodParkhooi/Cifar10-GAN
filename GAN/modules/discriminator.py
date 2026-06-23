@@ -23,7 +23,6 @@ class Discriminator(nn.Module):
 
         # Output layers
         self.lin1 = nn.Linear(in_features=256*4*4, out_features=1)  # in_features=C*W*H
-        self.sig = nn.Sigmoid()
 
         # General layers
         self.LeRe = nn.LeakyReLU(negative_slope=0.2)
@@ -49,6 +48,5 @@ class Discriminator(nn.Module):
         # Output layers
         x = x.view(x.size(0), -1)
         x = self.lin1(x)
-        x = self.sig(x)
 
         return x

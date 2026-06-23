@@ -37,7 +37,9 @@ try:
         D = discriminator.Discriminator().to(device)
 
         # Defining loss function
-        loss = nn.BCELoss()
+        D_loss_real = lambda x: torch.clamp(1-x, min=0).mean()
+        D_loss_fake = lambda x: torch.clamp(1+x, min=0).mean()
+        G_loss = lambda x: -(x.mean())
 
         # Defining optimizer
         G_opt = optim.Adam(G.parameters(), lr=configs.G_learning_rate, betas=configs.betas)
@@ -73,7 +75,7 @@ try:
 
                     # Calculating loss on real images
                     output_real = D(real_images)
-                    loss_D_real = loss(output_real, label_smoothing_labels)
+                    loss_D_real = D_loss_real(output_real)
 
                     # Feed discriminator with fake images
                     z = torch.randn(configs.batch_size, configs.G_latent_dim, device=device)
@@ -81,7 +83,7 @@ try:
 
                     # Calculating loss on fake images
                     output_fake = D(fake_images.to(device))
-                    loss_D_fake = loss(output_fake, fake_labels)
+                    loss_D_fake = D_loss_fake(output_fake)
 
                     # Calculating total loss
                     loss_D = loss_D_real + loss_D_fake
@@ -102,7 +104,7 @@ try:
 
                     # Feeding the discriminator and calculating loss
                     output = D(fake_images)
-                    loss_G = loss(output, real_labels)
+                    loss_G = G_loss(output)
 
                     # Training the model
                     loss_G.backward()
