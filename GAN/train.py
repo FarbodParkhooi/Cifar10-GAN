@@ -19,8 +19,10 @@ try:
         real_labels = torch.ones(configs.batch_size, 1, device=device)   # 1 labels for real images
         fake_labels = torch.zeros(configs.batch_size, 1, device=device)  # 0 labels for fake images
         fixed_noise = torch.randn(24, configs.G_latent_dim, device=device) # Fixed noise for creating same images
-        start_time = last_epoch_time = 0
+        start_time = 0
         begin_time = round(time.time())
+        epoch_times = [0]
+        average_func = lambda lst: sum(lst) / len(lst)
 
         # Related to libraries
         matplotlib.use('Agg') # preventing from crash
@@ -123,7 +125,7 @@ try:
                         f"{Fore.BLUE}{Style.NORMAL}D_real: {Fore.GREEN}{Style.BRIGHT}{output_real.mean().item():.3f} "
                         f"{Fore.BLUE}{Style.NORMAL}D_fake: {Fore.GREEN}{Style.BRIGHT}{output_fake.mean().item():.3f}{Fore.WHITE}{Style.NORMAL} "
                         f"{Fore.BLUE}{Style.NORMAL}Total time: {Fore.GREEN}{Style.BRIGHT}{round((round(time.time()-begin_time))/60)}mins "
-                        f"{Fore.BLUE}{Style.NORMAL}ETA: {Fore.GREEN}{Style.BRIGHT}{round((last_epoch_time*(configs.epochs-epoch_num))/60)}mins")
+                        f"{Fore.BLUE}{Style.NORMAL}ETA: {Fore.GREEN}{Style.BRIGHT}{round((average_func(epoch_times)*(configs.epochs-epoch_num))/60)}mins")
                 elif batch_idx == 0:
                     print(f"{Fore.BLUE}{Style.NORMAL}Epoch {Fore.GREEN}{Style.BRIGHT}{epoch_num+1}{Fore.WHITE}{Style.NORMAL}/{Fore.GREEN}{Style.BRIGHT}{configs.epochs} "
                         f"{Fore.BLUE}{Style.NORMAL}Batch {Fore.GREEN}{Style.BRIGHT}000{Fore.WHITE}{Style.NORMAL}/{Fore.GREEN}{Style.BRIGHT}{len(dataloader)} "
@@ -132,7 +134,7 @@ try:
                         f"{Fore.BLUE}{Style.NORMAL}D_real: {Fore.GREEN}{Style.BRIGHT}{output_real.mean().item():.3f} "
                         f"{Fore.BLUE}{Style.NORMAL}D_fake: {Fore.GREEN}{Style.BRIGHT}{output_fake.mean().item():.3f}{Fore.WHITE}{Style.NORMAL} "
                         f"{Fore.BLUE}{Style.NORMAL}Total time: {Fore.GREEN}{Style.BRIGHT}{round((round(time.time()-begin_time))/60)}mins "
-                        f"{Fore.BLUE}{Style.NORMAL}ETA: {Fore.GREEN}{Style.BRIGHT}{round((last_epoch_time*(configs.epochs-epoch_num))/60)}mins")
+                        f"{Fore.BLUE}{Style.NORMAL}ETA: {Fore.GREEN}{Style.BRIGHT}{round((average_func(epoch_times)*(configs.epochs-epoch_num))/60)}mins")
 
             # Logging the status after each epoch
             print(f"{Fore.BLUE}{Style.NORMAL}Epoch {Fore.GREEN}{Style.BRIGHT}{epoch_num+1}{Fore.WHITE}{Style.NORMAL}/{Fore.GREEN}{Style.BRIGHT}{configs.epochs} "
@@ -142,7 +144,7 @@ try:
                     f"{Fore.BLUE}{Style.NORMAL}D_real: {Fore.GREEN}{Style.BRIGHT}{output_real.mean().item():.3f} "
                     f"{Fore.BLUE}{Style.NORMAL}D_fake: {Fore.GREEN}{Style.BRIGHT}{output_fake.mean().item():.3f}{Fore.WHITE}{Style.NORMAL} "
                     f"{Fore.BLUE}{Style.NORMAL}Total time: {Fore.GREEN}{Style.BRIGHT}{round((round(time.time()-begin_time))/60)}mins "
-                    f"{Fore.BLUE}{Style.NORMAL}ETA: {Fore.GREEN}{Style.BRIGHT}{round((last_epoch_time*(configs.epochs-epoch_num))/60)}mins")
+                    f"{Fore.BLUE}{Style.NORMAL}ETA: {Fore.GREEN}{Style.BRIGHT}{round((average_func(epoch_times)*(configs.epochs-epoch_num))/60)}mins")
 
             # Creating same image after each epoch
             # Set generator to evaluation mode
@@ -170,7 +172,7 @@ try:
                 print(f"{Fore.MAGENTA}{Style.BRIGHT}Model saved to {configs.output_directory}/{configs.output_models_directory}/epoch_{epoch_num+1:03d}.png at epoch {epoch_num+1:03d}{Fore.WHITE}{Style.NORMAL}")
 
             # Calculating the time spent on this epoch
-            last_epoch_time = round(time.time() - start_time)
+            epoch_times.append(round(time.time() - start_time))
 
         # Plotting training process
         plt.figure(figsize=(10, 5))
