@@ -90,6 +90,7 @@ try:
                     # Gradient Penalty
                     epsilon = torch.rand(configs.batch_size, 1, 1, 1, device=device)
                     interpolated_images = epsilon*real_images+(1-epsilon)*fake_images
+                    interpolated_images = interpolated_images.requires_grad_(True)
                     output_interpolated = D(interpolated_images)
                     # Computing gradient 
                     gradients = torch.autograd.grad(
