@@ -74,8 +74,8 @@ try:
         {Fore.BLUE}{Style.BRIGHT}-->   Discriminator Architecture {Fore.WHITE}{Style.NORMAL}:
         {D}
 
-        {Fore.BLUE}{Style.BRIGHT}-->   Generator Parameters{Fore.WHITE}{Style.NORMAL}:      {cfg.count_parameters(G)}
-        {Fore.BLUE}{Style.BRIGHT}-->   Discriminator Parameters{Fore.WHITE}{Style.NORMAL}:  {cfg.count_parameters(D)} {Fore.WHITE}{Style.NORMAL}""")
+        {Fore.BLUE}{Style.BRIGHT}-->   Generator Parameters{Fore.WHITE}{Style.NORMAL}:      {configs.count_parameters(G)}
+        {Fore.BLUE}{Style.BRIGHT}-->   Discriminator Parameters{Fore.WHITE}{Style.NORMAL}:  {configs.count_parameters(D)} {Fore.WHITE}{Style.NORMAL}""")
         print(f"\n{Fore.GREEN}{Style.BRIGHT}                            ===- Using GPU -=== {Fore.WHITE}{Style.NORMAL}") if torch.cuda.is_available() else print(f"\n{Fore.YELLOW}{Style.BRIGHT}                            ===- Using CPU -=== {Fore.WHITE}{Style.NORMAL}")
 
         # lists for saving losses

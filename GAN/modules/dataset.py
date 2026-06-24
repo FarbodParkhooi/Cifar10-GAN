@@ -1,7 +1,7 @@
 # importing libraries
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
-from GAN.modules import configs
+from modules import configs
 
 configs = configs.Configs()
 
