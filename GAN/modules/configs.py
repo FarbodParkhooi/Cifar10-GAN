@@ -45,6 +45,9 @@ class Configs():
     real_images_noise:float = 0.01
     D_gradients_clipping_value:float = 5.0
     penalty_effect:float = 0.1
+    # Loading from checkpoint
+    load_from_checkpoint = False
+    checkpoint_directory = "./"
 
 def count_parameters(model) -> int:
     """
