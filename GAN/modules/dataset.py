@@ -1,9 +1,9 @@
 # importing libraries
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
-from modules import utils
+from GAN.modules import configs
 
-configs = utils.Configs()
+configs = configs.Configs()
 
 # Defining image transforms
 transform = transforms.Compose([
