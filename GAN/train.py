@@ -13,6 +13,7 @@ try:
         import torch
         import time
         import json
+        import warnings
 
         # Defining values
         cfg = configs.Configs()
@@ -24,12 +25,14 @@ try:
         epoch_times = [0]
         average_func = lambda lst: sum(lst) / len(lst)
         start_epoch = 0
-        torch.backends.cudnn.benchmark = cfg.enable_cudnn
+        
 
         # Related to libraries
         matplotlib.use('Agg') # preventing from crash
         import matplotlib.pyplot as plt # importing pyplot with new backend
         init() # init Colorama
+        torch.backends.cudnn.benchmark = cfg.enable_cudnn  # CudNN configs 
+        warnings.filterwarnings("ignore")  # Disabling warnings
 
         # Creating output directory
         makedirs(cfg.output_directory, exist_ok=True)
@@ -55,13 +58,21 @@ try:
         # Load from checkpoint
         if cfg.load_from_checkpoint:
             try:
+                print(f"{Fore.GREEN}{Style.NORMAL}Trying to load model. ", end="")
                 G.load_state_dict(torch.load(f"{cfg.checkpoint_directory}/generator.pth"))
+                print(f"{Style.BRIGHT}Loaded generator. ", end="")
                 D.load_state_dict(torch.load(f"{cfg.checkpoint_directory}/discriminator.pth"))
+                print(f"Loaded discriminator. ", end="")
                 G_opt.load_state_dict(torch.load(f"{cfg.checkpoint_directory}/generator_optimizer.pth"))
+                print(f"Loaded generator's optimizer. ", end="")
                 D_opt.load_state_dict(torch.load(f"{cfg.checkpoint_directory}/discriminator_optimizer.pth"))
+                print(f"Loaded discriminator's optimizer. ", end="")
                 D_scheduler.load_state_dict(torch.load(f"{cfg.checkpoint_directory}/lr_scheduler.pth")) 
+                print(f"Loaded discriminator's lr scheduler. ", end="")
                 with open(f"{cfg.checkpoint_directory}/status.json") as file:  
                     start_epoch = json.load(file)["epoch_num"]+1
+                print(f"Loaded epoch number. ", end="")
+                print("Loaded model successfuly.")
             except Exception as e:
                 print(f"{Fore.RED}{Back.LIGHTBLACK_EX}{Style.BRIGHT}ERROR WHILE LOADING FROM CHECKPOING. CHECK FOR FILES(Error: {e}){Fore.WHITE}{Back.BLACK}{Style.NORMAL}")
 
@@ -184,7 +195,7 @@ try:
                     f"{Fore.BLUE}{Style.NORMAL}ETA: {Fore.GREEN}{Style.BRIGHT}{round((average_func(epoch_times)*(cfg.epochs-epoch_num))/60)}mins")
 
             # Creating same image after each epoch
-            if epoch_num % cfg.save_sample_image_every_epoch == 0:
+            if (epoch_num+1) % cfg.save_sample_image_every_epoch == 0:
                 # Set generator to evaluation mode
                 G.eval()
                 with torch.no_grad():
