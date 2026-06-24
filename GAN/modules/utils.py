@@ -16,7 +16,7 @@ class Configs():
     # Discriminator model
     D_learning_rate:float = 0.0001
     # Multi Step Learning Rate configs
-    reduce_epochs:list = [50, 100]
+    reduce_epochs = [50, 100]
     reduce_lr:float = 0.5  # after reduce_epochs[N] epochs:  D_learning_rate*reduce_lr
 
     # Optimizer related
