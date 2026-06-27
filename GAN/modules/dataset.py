@@ -19,7 +19,7 @@ transform = transforms.Compose([
 # Loading dataset
 dataset = datasets.CIFAR10(
     root=configs.dataset_dir,
-    download=False,
+    download=True,
     train=True,
     transform=transform
 )
