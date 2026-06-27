@@ -184,8 +184,9 @@ try:
                 plt.imshow(numpy.transpose(grid, (1, 2, 0)))
                 plt.axis('off')
                 plt.title(f"Epoch {epoch_num+1}")
-                plt.savefig(f"{configs.output_directory}/{configs.output_images_directory}/epoch_{epoch_num+1:03d}.png", bbox_inches='tight')
+                plt.savefig(f"{configs.output_directory}/{configs.output_images_directory}/epoch_{epoch_num:03d}.png", bbox_inches='tight')
                 plt.close()
+                print(f"{Fore.MAGENTA}{Style.BRIGHT}Images saved to {configs.output_directory}/{configs.output_images_directory}/epoch_{epoch_num:03d}.png{Fore.WHITE}{Style.NORMAL}")
 
             # Saving checkpoints every save_checkpoints_every_epoch epoch
             if (epoch_num+1) % configs.save_checkpoints_every_epoch == 0:
@@ -216,7 +217,7 @@ try:
             epoch_times.append(round(time.time() - start_time))
 
             # Finishing the epoch
-            print(f"{Fore.MAGENTA}{Style.BRIGHT}Epoch {epoch_num+1} complete. Images saved to {configs.output_directory}/{configs.output_images_directory}/epoch_{epoch_num+1:03d}.png{Fore.WHITE}{Style.NORMAL}")
+            print(f"{Fore.MAGENTA}{Style.BRIGHT}======================================{Fore.WHITE}{Style.NORMAL}")
 
         # Plotting training process
         plt.figure(figsize=(10, 5))
