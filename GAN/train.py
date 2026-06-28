@@ -168,7 +168,7 @@ try:
                     f"{Fore.BLUE}{Style.NORMAL}ETA: {Fore.GREEN}{Style.BRIGHT}{round((average_func(epoch_times)*(configs.epochs-epoch_num))/60)}mins")
 
             # Creating same image after each epoch
-            if epoch_num % configs.save_sample_image_every_epoch == 0:
+            if (epoch_num+1) % configs.save_sample_image_every_epoch == 0:
                 # Set generator to evaluation mode
                 G.eval()
                 with torch.no_grad():
@@ -184,9 +184,9 @@ try:
                 plt.imshow(numpy.transpose(grid, (1, 2, 0)))
                 plt.axis('off')
                 plt.title(f"Epoch {epoch_num+1}")
-                plt.savefig(f"{configs.output_directory}/{configs.output_images_directory}/epoch_{epoch_num:03d}.png", bbox_inches='tight')
+                plt.savefig(f"{configs.output_directory}/{configs.output_images_directory}/epoch_{epoch_num+1:03d}.png", bbox_inches='tight')
                 plt.close()
-                print(f"{Fore.MAGENTA}{Style.BRIGHT}Images saved to {configs.output_directory}/{configs.output_images_directory}/epoch_{epoch_num:03d}.png{Fore.WHITE}{Style.NORMAL}")
+                print(f"{Fore.MAGENTA}{Style.BRIGHT}Images saved to {configs.output_directory}/{configs.output_images_directory}/epoch_{epoch_num+1:03d}.png{Fore.WHITE}{Style.NORMAL}")
 
             # Saving checkpoints every save_checkpoints_every_epoch epoch
             if (epoch_num+1) % configs.save_checkpoints_every_epoch == 0:
