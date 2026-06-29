@@ -25,7 +25,6 @@ try:
         epoch_times = [0]
         average_func = lambda lst: sum(lst) / len(lst)
         start_epoch = 0
-        
 
         # Related to libraries
         matplotlib.use('Agg') # preventing from crash
@@ -112,6 +111,7 @@ try:
                     # Feed discriminator with fake images
                     z = torch.randn(cfg.batch_size, cfg.G_latent_dim, device=device)
                     fake_images = G(z).detach()
+                    fake_images = fake_images + cfg.fake_images_noise * torch.randn_like(fake_images)
 
                     # Computing loss on fake images
                     output_fake = D(fake_images.to(device))
@@ -211,13 +211,10 @@ try:
                 plt.imshow(numpy.transpose(grid, (1, 2, 0)))
                 plt.axis('off')
                 plt.title(f"Epoch {epoch_num+1}")
-                plt.savefig(f"{configs.output_directory}/{configs.output_images_directory}/epoch_{epoch_num+1:03d}.png", bbox_inches='tight')
+                plt.savefig(f"{cfg.output_directory}/{cfg.output_images_directory}/epoch_{epoch_num+1:03d}.png", bbox_inches='tight')
                 plt.close()
-                print(f"{Fore.MAGENTA}{Style.BRIGHT}Images saved to {configs.output_directory}/{configs.output_images_directory}/epoch_{epoch_num+1:03d}.png{Fore.WHITE}{Style.NORMAL}")
-                plt.savefig(f"{cfg.output_directory}/{cfg.output_images_directory}/epoch_{epoch_num:03d}.png", bbox_inches='tight')
-                plt.close()
-                print(f"{Fore.MAGENTA}{Style.BRIGHT}Images saved to {cfg.output_directory}/{cfg.output_images_directory}/epoch_{epoch_num:03d}.png{Fore.WHITE}{Style.NORMAL}")
-
+                print(f"{Fore.MAGENTA}{Style.BRIGHT}Images saved to {cfg.output_directory}/{cfg.output_images_directory}/epoch_{epoch_num+1:03d}.png{Fore.WHITE}{Style.NORMAL}")
+    
             # Saving checkpoints every save_checkpoints_every_epoch epoch
             if (epoch_num+1) % cfg.save_checkpoints_every_epoch == 0:
                 makedirs(f"{cfg.output_directory}/{cfg.output_models_directory}/epoch_{epoch_num+1:03d}/", exist_ok=True)

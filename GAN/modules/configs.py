@@ -14,9 +14,9 @@ class Configs():
     G_learning_rate:float = 0.0001
 
     # Discriminator model
-    D_learning_rate:float = 0.0001
+    D_learning_rate:float = 0.00005
     # Multi Step Learning Rate configs
-    reduce_epochs:list = field(default_factory=lambda: [50, 100])
+    reduce_epochs:list = field(default_factory=lambda: [100])
     reduce_lr:float = 0.5  # after reduce_epochs[N] epochs:  D_learning_rate*reduce_lr
 
     # Optimizer related
@@ -30,21 +30,22 @@ class Configs():
 
     # Training process
     # General configs
-    epochs:int = 300
     output_directory:str = "./train_outputs"
     output_images_directory:str = "generated_images"
     output_models_directory:str = "saved_models"
     print_log_every_batch:int = 250
     save_checkpoints_every_epoch:int = 50   # Saves all of needed data for re-training process if stopped
     save_sample_image_every_epoch:int = 10
-    enable_cudnn = True  #* 
     # Deep configS
+    enable_cudnn = True  #* 
+    epochs:int = 300
     train_D_per_epoch:int = 1
-    train_G_per_epoch:int = 2
+    train_G_per_epoch:int = 3
     label_smoothing_value:float = 0.85
     real_images_noise:float = 0.01
+    fake_images_noise:float = 0.005
     D_gradients_clipping_value:float = 5.0
-    penalty_effect:float = 0.1
+    penalty_effect:float = 0.5  
     # Loading from checkpoint
     load_from_checkpoint = False
     checkpoint_directory = "./"
